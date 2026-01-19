@@ -1,28 +1,78 @@
 # Adaptive Image Improvement
 
-This project implements an autonomous image refinement loop called **Adaptive Image Improvement**. The goal is to iteratively improve the quality, alignment, and aesthetic fidelity of generated images by adjusting prompts and ComfyUI parameters based on feedback from two independent [LLM + Vision] stacks.
+An autonomous image refinement loop that iteratively improves generated images by adjusting prompts and ComfyUI parameters based on feedback from two independent [LLM + Vision] stacks.
+
+## Purpose
+
+To autonomously refine images through a loop of generation, critique, mutation, and repetition, achieving better semantic alignment, style fidelity, and overall quality.
 
 ## Features
 
-- Uses ComfyUI for image generation
-- Two Nexa CLI instances: `nexa_qwen3` (semantic-focused) and `nexa_wizard` (style-focused)
-- Iterative loop: generate, critique, mutate, repeat
-- Nodes for prompt mutation, parameter tuning, vision tagging, scoring, arbitration, logging
+- **ComfyUI Integration**: Generates images via API.
+- **Dual Nexa CLI Instances**:
+  - `nexa_qwen3`: Semantic-focused (Qwen3 + Vision)
+  - `nexa_wizard`: Style-focused (WizardLM + Vision)
+- **Iterative Loop**: Generate → Extract Tags → Score → Mutate → Repeat
+- **Modular Nodes**: Classes for mutation, tuning, extraction, scoring, arbitration, logging
 
 ## Installation
 
-1. Install Python 3.x
-2. Install dependencies: `pip install -r requirements.txt`
-3. Install ComfyUI: Follow instructions at https://github.com/comfyanonymous/ComfyUI
-4. Install Nexa CLI: `pip install nexa-cli` (assuming available)
-5. Set up models for Nexa: `nexa pull qwen3` and `nexa pull wizardlm` or appropriate models
+1. **Clone or Download**: Get the project files.
+2. **Python Environment**:
+   - Install Python 3.10+
+   - Create venv: `python -m venv .venv`
+   - Activate: `.venv\Scripts\activate` (Windows)
+3. **Install Dependencies**:
+   - `pip install -r requirements.txt`
+4. **Install ComfyUI**:
+   - Follow https://github.com/comfyanonymous/ComfyUI
+   - Run ComfyUI server: `comfyui --server` (listens on 127.0.0.1:8188)
+5. **Install Nexa CLI**:
+   - `pip install nexa-cli`
+   - Pull models: `nexa pull qwen3` and `nexa pull wizardlm`
 
 ## Usage
 
-Run the main script: `python src/main.py`
+1. **Start Services**:
+   - Launch ComfyUI server.
+   - Ensure Nexa models are ready.
 
-Provide initial prompt and parameters.
+2. **Run the Agent**:
+   - Use VS Code task: "Run Adaptive Image Improvement" (configured in .vscode/tasks.json)
+   - Or manually: `python src/adaptive_image_improvement.py`
 
-## Next Steps
+3. **Monitor**:
+   - Check `improvement_log.txt` for logs.
+   - Images saved in output directory (if configured in ComfyUI workflow).
 
-Implement the full agent loop.
+## Workflow Details
+
+- **Initial Setup**: Prompt and params (CFG, steps).
+- **Loop (Max 10 iterations)**:
+  1. Generate image via ComfyUI API.
+  2. Extract semantic tags (qwen3) and style tags (wizard).
+  3. Score alignment.
+  4. If improved, accept; else mutate prompt/params.
+- **Output**: Final image, log of iterations.
+
+## Configuration
+
+- Edit `src/adaptive_image_improvement.py` for workflow JSON, prompts, thresholds.
+- ComfyUI workflow assumes a basic KSampler setup.
+
+## Dependencies
+
+- Python 3.10+
+- ComfyUI
+- Nexa CLI with qwen3 and wizardlm
+- Packages: pillow, opencv-python, numpy, matplotlib, requests
+
+## Troubleshooting
+
+- Ensure ComfyUI server is running on port 8188.
+- Check Nexa CLI for model availability.
+- Logs in `improvement_log.txt` for debugging.
+
+## License
+
+MIT
