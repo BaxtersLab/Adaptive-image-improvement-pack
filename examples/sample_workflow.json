@@ -1,0 +1,18 @@
+{
+  "workflow": {
+    "nodes": [
+      {
+        "id": 1,
+        "type": "NexaPopupLoaderNode",
+        "pos": [0, 0],
+        "properties": {}
+      }
+    ],
+    "links": [],
+    "groups": [],
+    "config": {},
+    "extra": {},
+    "version": 0.4
+  },
+  "description": "Sample workflow for loading Nexa models and chatting with semantic/style models in Adaptive Image Improvement."
+}

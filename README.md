@@ -1,6 +1,6 @@
 # Adaptive Image Improvement
 
-An autonomous image refinement loop that iteratively improves generated images by adjusting prompts and ComfyUI parameters based on feedback from two independent [LLM + Vision] stacks.
+A ComfyUI extension for autonomous image refinement using dual Nexa CLI instances with drag-and-drop model loading and chat interfaces.
 
 ## Purpose
 
@@ -10,40 +10,60 @@ To autonomously refine images through a loop of generation, critique, mutation, 
 
 - **ComfyUI Integration**: Generates images via API.
 - **Dual Nexa CLI Instances**:
-  - `nexa_qwen3`: Semantic-focused (Qwen3 + Vision)
-  - `nexa_wizard`: Style-focused (WizardLM + Vision)
+  - `qwen3`: Semantic-focused (Qwen3 + Vision)
+  - `wizardlm`: Style-focused (WizardLM + Vision)
 - **Iterative Loop**: Generate → Extract Tags → Score → Mutate → Repeat
 - **Modular Nodes**: Classes for mutation, tuning, extraction, scoring, arbitration, logging
+- **NexaPopupLoaderNode**: Drag-and-drop model loading with chat interfaces for both models
 
 ## Installation
 
-1. **Clone or Download**: Get the project files.
-2. **Python Environment**:
-   - Install Python 3.10+
-   - Create venv: `python -m venv .venv`
-   - Activate: `.venv\Scripts\activate` (Windows)
+1. **Install ComfyUI**:
+   - Follow https://github.com/comfyanonymous/ComfyUI
+2. **Install the Extension**:
+   - Clone or download this repo into `ComfyUI/custom_nodes/`
+   - Or use ComfyUI Manager to install.
 3. **Install Dependencies**:
    - `pip install -r requirements.txt`
-4. **Install ComfyUI**:
-   - Follow https://github.com/comfyanonymous/ComfyUI
-   - Run ComfyUI server: `comfyui --server` (listens on 127.0.0.1:8188)
-5. **Install Nexa CLI**:
+4. **Install Nexa CLI**:
    - `pip install nexa-cli`
    - Pull models: `nexa pull qwen3` and `nexa pull wizardlm`
 
 ## Usage
 
-1. **Start Services**:
-   - Launch ComfyUI server.
-   - Ensure Nexa models are ready.
+1. **Start ComfyUI**:
+   - Run ComfyUI server.
+2. **Load the Extension**:
+   - The nodes will appear in ComfyUI under "nexa" category.
+3. **Use NexaPopupLoaderNode**:
+   - Add to workflow, run to open GUI for loading models and chatting.
+4. **Build Workflow**:
+   - Connect nodes for the refinement loop (future: convert script nodes to ComfyUI nodes).
+5. **Monitor**:
+   - Logs in ComfyUI console.
 
-2. **Run the Agent**:
-   - Use VS Code task: "Run Adaptive Image Improvement" (configured in .vscode/tasks.json)
-   - Or manually: `python src/adaptive_image_improvement.py`
+## Nodes Overview
 
-3. **Monitor**:
-   - Check `improvement_log.txt` for logs.
-   - Images saved in output directory (if configured in ComfyUI workflow).
+### NexaPopupLoaderNode
+
+- **Function**: Opens a desktop popup for drag-and-drop model loading, with chat buttons for semantic and style models.
+- **Chat**: Interactive chat with qwen3 (semantic) and wizardlm (style) using Nexa CLI.
+
+## Dependencies
+
+- ComfyUI
+- Nexa CLI with qwen3 and wizardlm
+- tkinter, tkinterdnd2 (for GUI)
+
+## Troubleshooting
+
+- Ensure ComfyUI is running.
+- Check Nexa CLI for model availability.
+- GUI requires tkinterdnd2 for drag-drop.
+
+## License
+
+MIT
 
 ## Workflow Details
 

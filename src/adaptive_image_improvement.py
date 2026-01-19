@@ -11,10 +11,80 @@ import json
 import time
 from PIL import Image
 import logging
+import tkinter as tk
+import shutil
+
+# Assume tkinterdnd2 is installed for drag drop
+try:
+    from tkinterdnd2 import DND_FILES, TkinterDnD
+except ImportError:
+    TkinterDnD = tk
+    DND_FILES = None
 
 # Configure logging
 logging.basicConfig(filename='improvement_log.txt', level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s')
+
+def validate_nexa_model_file(file_path):
+    valid_extensions = ['.gguf', '.bin', '.safetensors', '.pth', '.ckpt', '.onnx', '.pb']
+    file_name = os.path.basename(file_path).lower()
+    file_extension = os.path.splitext(file_name)[1]
+
+    if file_extension not in valid_extensions:
+        print(f"❌ File type not supported: {file_name}. Supported formats: {', '.join(valid_extensions)}")
+        return False
+
+    # Additional validation for known incompatible patterns
+    incompatible_patterns = ['.exe', '.dll', '.so', '.dylib', '.zip', '.rar', '.7z']
+    if any(pattern in file_name for pattern in incompatible_patterns):
+        print(f"❌ Incompatible file: {file_name}. This appears to be an executable or archive, not a model file.")
+        return False
+
+    print(f"✅ File accepted: {file_name} ({os.path.getsize(file_path) / (1024 * 1024):.2f}MB)")
+    return True
+
+def load_nexa_model(file_path):
+    try:
+        print(f"Loading Nexa model: {os.path.basename(file_path)}")
+        # Assume models directory
+        models_dir = os.path.expanduser("~/.nexa/models")
+        os.makedirs(models_dir, exist_ok=True)
+        dest_path = os.path.join(models_dir, os.path.basename(file_path))
+        shutil.copy(file_path, dest_path)
+        print(f"Model loaded successfully: {dest_path}")
+    except Exception as error:
+        print(f"Failed to load model: {str(error)}")
+
+def launch_nexa_loader():
+    # Create pop-up window for drag & drop model loading
+    root = TkinterDnD.Tk() if TkinterDnD != tk else tk.Tk()
+    root.title("Nexa Model Loader")
+    root.geometry("400x200")
+
+    label = tk.Label(root, text="Drag and drop Nexa model files here to load")
+    label.pack(expand=True)
+
+    def on_drop(event):
+        if DND_FILES:
+            files = root.splitlist(event.data)
+            for file_path in files:
+                if validate_nexa_model_file(file_path):
+                    load_nexa_model(file_path)
+                    label.config(text=f"Loaded: {os.path.basename(file_path)}")
+                else:
+                    label.config(text="Invalid file")
+        else:
+            label.config(text="Drag & drop not supported, install tkinterdnd2")
+
+    if DND_FILES:
+        label.drop_target_register(DND_FILES)
+        label.dnd_bind('<<Drop>>', on_drop)
+
+    # Close button
+    close_btn = tk.Button(root, text="Close", command=root.destroy)
+    close_btn.pack()
+
+    root.mainloop()
 
 class PromptMutatorNode:
     def mutate(self, prompt, feedback):

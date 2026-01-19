@@ -1,0 +1,12 @@
+name: "Adaptive Image Improvement"
+description: "An autonomous image refinement loop that iteratively improves generated images by adjusting prompts and ComfyUI parameters based on feedback from dual Nexa CLI instances."
+author: "BaxtersLab"
+version: "1.0.0"
+comfyui_version: ">=0.1.0"
+nodes:
+  - NexaPopupLoaderNode
+files:
+  - nodes/NexaPopupLoaderNode.py
+  - __init__.py
+  - requirements.txt
+  - README.md
