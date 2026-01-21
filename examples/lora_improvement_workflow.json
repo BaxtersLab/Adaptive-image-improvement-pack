@@ -1,0 +1,386 @@
+{
+  "last_node_id": 25,
+  "last_link_id": 35,
+  "nodes": [
+    {
+      "id": 1,
+      "type": "LoopControllerNode",
+      "pos": [100, 100],
+      "size": [300, 150],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [
+        {"name": "max_iterations", "type": "INT", "link": null, "widget": {"name": "max_iterations"}},
+        {"name": "current_iteration", "type": "INT", "link": null, "widget": {"name": "current_iteration"}},
+        {"name": "continue_loop", "type": "BOOLEAN", "link": null, "widget": {"name": "continue_loop"}}
+      ],
+      "outputs": [
+        {"name": "INT", "type": "INT", "links": [1], "slot_index": 0},
+        {"name": "BOOLEAN", "type": "BOOLEAN", "links": [2], "slot_index": 1},
+        {"name": "STRING", "type": "STRING", "links": null, "slot_index": 2}
+      ],
+      "properties": {},
+      "widgets_values": [5, 0, true]
+    },
+    {
+      "id": 2,
+      "type": "CheckpointLoaderSimple",
+      "pos": [500, 100],
+      "size": [300, 100],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {"name": "MODEL", "type": "MODEL", "links": [3], "slot_index": 0},
+        {"name": "CLIP", "type": "CLIP", "links": [4], "slot_index": 1},
+        {"name": "VAE", "type": "VAE", "links": [5], "slot_index": 2}
+      ],
+      "properties": {},
+      "widgets_values": ["realisticVisionV51_v51VAE.safetensors"]
+    },
+    {
+      "id": 3,
+      "type": "LoraLoader",
+      "pos": [850, 100],
+      "size": [300, 150],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [
+        {"name": "model", "type": "MODEL", "link": [3]},
+        {"name": "clip", "type": "CLIP", "link": [4]}
+      ],
+      "outputs": [
+        {"name": "MODEL", "type": "MODEL", "links": [6], "slot_index": 0},
+        {"name": "CLIP", "type": "CLIP", "links": [7], "slot_index": 1}
+      ],
+      "properties": {},
+      "widgets_values": ["target_lora.safetensors", 1.0]
+    },
+    {
+      "id": 4,
+      "type": "PromptMutatorNode",
+      "pos": [1200, 100],
+      "size": [300, 150],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [
+        {"name": "prompt", "type": "STRING", "link": null, "widget": {"name": "prompt"}},
+        {"name": "feedback", "type": "STRING", "link": [8], "widget": {"name": "feedback"}}
+      ],
+      "outputs": [
+        {"name": "STRING", "type": "STRING", "links": [9], "slot_index": 0}
+      ],
+      "properties": {},
+      "widgets_values": ["photorealistic portrait, detailed face, professional lighting", ""]
+    },
+    {
+      "id": 5,
+      "type": "ComfyParamTunerNode",
+      "pos": [1600, 100],
+      "size": [300, 150],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [
+        {"name": "params_json", "type": "STRING", "link": null, "widget": {"name": "params_json"}},
+        {"name": "feedback", "type": "STRING", "link": [8], "widget": {"name": "feedback"}}
+      ],
+      "outputs": [
+        {"name": "STRING", "type": "STRING", "links": [10], "slot_index": 0}
+      ],
+      "properties": {},
+      "widgets_values": ["{\"cfg\": 7.0, \"steps\": 20, \"denoise\": 1.0}", ""]
+      "widgets_values": ["{\"cfg\": 7.0, \"steps\": 20, \"denoise\": 1.0}", ""]
+    },
+    {
+      "id": 6,
+      "type": "KSampler",
+      "pos": [2000, 100],
+      "size": [300, 250],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [
+        {"name": "model", "type": "MODEL", "link": [6]},
+        {"name": "positive", "type": "CONDITIONING", "link": [11]},
+        {"name": "negative", "type": "CONDITIONING", "link": [12]},
+        {"name": "latent_image", "type": "LATENT", "link": [13]}
+      ],
+      "outputs": [
+        {"name": "LATENT", "type": "LATENT", "links": [14], "slot_index": 0}
+      ],
+      "properties": {},
+      "widgets_values": [123, 20, 7.0, "euler", "normal", 1.0]
+    },
+    {
+      "id": 7,
+      "type": "EmptyLatentImage",
+      "pos": [2000, 400],
+      "size": [300, 150],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {"name": "LATENT", "type": "LATENT", "links": [13], "slot_index": 0}
+      ],
+      "properties": {},
+      "widgets_values": [512, 512, 1]
+    },
+    {
+      "id": 8,
+      "type": "VAEDecode",
+      "pos": [2400, 100],
+      "size": [300, 100],
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "inputs": [
+        {"name": "samples", "type": "LATENT", "link": [14]},
+        {"name": "vae", "type": "VAE", "link": [5]}
+      ],
+      "outputs": [
+        {"name": "IMAGE", "type": "IMAGE", "links": [15, 16], "slot_index": 0}
+      ],
+      "properties": {},
+      "widgets_values": []
+    },
+    {
+      "id": 9,
+      "type": "VisionTagExtractorNode",
+      "pos": [2800, 100],
+      "size": [400, 200],
+      "flags": {},
+      "order": 8,
+      "mode": 0,
+      "inputs": [
+        {"name": "image", "type": "IMAGE", "link": [15]}
+      ],
+      "outputs": [
+        {"name": "STRING", "type": "STRING", "links": [17], "slot_index": 0}
+      ],
+      "properties": {},
+      "widgets_values": ["qwen3", "Analyze this image for composition, lighting, detail quality, and style consistency. Identify strengths and areas for improvement."]
+    },
+    {
+      "id": 10,
+      "type": "VisionTagExtractorNode",
+      "pos": [2800, 350],
+      "size": [400, 200],
+      "flags": {},
+      "order": 9,
+      "mode": 0,
+      "inputs": [
+        {"name": "image", "type": "IMAGE", "link": [16]}
+      ],
+      "outputs": [
+        {"name": "STRING", "type": "STRING", "links": [18], "slot_index": 0}
+      ],
+      "properties": {},
+      "widgets_values": ["wizardlm", "Critique this image's artistic style, technical quality, and suggest specific improvements for LoRA training refinement."]
+    },
+    {
+      "id": 11,
+      "type": "PromptScoreNode",
+      "pos": [3300, 200],
+      "size": [300, 150],
+      "flags": {},
+      "order": 10,
+      "mode": 0,
+      "inputs": [
+        {"name": "prompt", "type": "STRING", "link": [9]},
+        {"name": "tags_qwen", "type": "STRING", "link": [17]},
+        {"name": "tags_wizard", "type": "STRING", "link": [18]}
+      ],
+      "outputs": [
+        {"name": "FLOAT", "type": "FLOAT", "links": [19], "slot_index": 0},
+        {"name": "STRING", "type": "STRING", "links": null, "slot_index": 1}
+      ],
+      "properties": {},
+      "widgets_values": []
+    },
+    {
+      "id": 12,
+      "type": "ImprovementArbiterNode",
+      "pos": [3700, 200],
+      "size": [400, 250],
+      "flags": {},
+      "order": 11,
+      "mode": 0,
+      "inputs": [
+        {"name": "current_score", "type": "FLOAT", "link": [19]},
+        {"name": "previous_score", "type": "FLOAT", "link": null},
+        {"name": "current_iteration", "type": "INT", "link": [1]}
+      ],
+      "outputs": [
+        {"name": "STRING", "type": "STRING", "links": [20], "slot_index": 0},
+        {"name": "BOOLEAN", "type": "BOOLEAN", "links": [21], "slot_index": 1},
+        {"name": "STRING", "type": "STRING", "links": null, "slot_index": 2}
+      ],
+      "properties": {},
+      "widgets_values": [0.0, 0.1, 5]
+    },
+    {
+      "id": 13,
+      "type": "SaveImage",
+      "pos": [2400, 250],
+      "size": [300, 200],
+      "flags": {},
+      "order": 12,
+      "mode": 0,
+      "inputs": [
+        {"name": "images", "type": "IMAGE", "link": null}
+      ],
+      "outputs": [],
+      "properties": {},
+      "widgets_values": ["lora_improvement_output"]
+    },
+    {
+      "id": 14,
+      "type": "CLIPTextEncode",
+      "pos": [2000, -200],
+      "size": [300, 100],
+      "flags": {},
+      "order": 13,
+      "mode": 0,
+      "inputs": [
+        {"name": "clip", "type": "CLIP", "link": [7]}
+      ],
+      "outputs": [
+        {"name": "CONDITIONING", "type": "CONDITIONING", "links": [11], "slot_index": 0}
+      ],
+      "properties": {},
+      "widgets_values": ["blurry, low quality, deformed, ugly"]
+    },
+    {
+      "id": 15,
+      "type": "CLIPTextEncode",
+      "pos": [1600, -200],
+      "size": [300, 100],
+      "flags": {},
+      "order": 14,
+      "mode": 0,
+      "inputs": [
+        {"name": "clip", "type": "CLIP", "link": [7]}
+      ],
+      "outputs": [
+        {"name": "CONDITIONING", "type": "CONDITIONING", "links": [12], "slot_index": 0}
+      ],
+      "properties": {},
+      "widgets_values": ["masterpiece, best quality, photorealistic"]
+    },
+    {
+      "id": 16,
+      "type": "Reroute",
+      "pos": [1200, 300],
+      "size": [40, 40],
+      "flags": {},
+      "order": 15,
+      "mode": 0,
+      "inputs": [
+        {"name": "", "type": "*", "link": [20]}
+      ],
+      "outputs": [
+        {"name": "", "type": "*", "links": null, "slot_index": 0}
+      ],
+      "properties": {},
+      "widgets_values": []
+    },
+    {
+      "id": 17,
+      "type": "Reroute",
+      "pos": [1600, 300],
+      "size": [40, 40],
+      "flags": {},
+      "order": 16,
+      "mode": 0,
+      "inputs": [
+        {"name": "", "type": "*", "link": [21]}
+      ],
+      "outputs": [
+        {"name": "", "type": "*", "links": [2], "slot_index": 0}
+      ],
+      "properties": {},
+      "widgets_values": []
+    },
+    {
+      "id": 18,
+      "type": "Note",
+      "pos": [100, -100],
+      "size": [400, 200],
+      "flags": {},
+      "order": 17,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [],
+      "properties": {},
+      "widgets_values": ["LoRA Improvement Workflow\\n\\n1. Load your target LoRA\\n2. Generate test images\\n3. Vision models analyze quality\\n4. Scores determine if improvement needed\\n5. Loop refines prompts/parameters\\n\\nUse this to identify LoRA weaknesses and generate improvement data."]
+    },
+    {
+      "id": 19,
+      "type": "OllamaDataReaderNode",
+      "pos": [3300, 400],
+      "size": [300, 150],
+      "flags": {},
+      "order": 18,
+      "mode": 0,
+      "inputs": [
+        {"name": "input_text", "type": "STRING", "link": [17]}
+      ],
+      "outputs": [
+        {"name": "STRING", "type": "STRING", "links": [8], "slot_index": 0}
+      ],
+      "properties": {},
+      "widgets_values": ["Extract key improvement suggestions from the vision analysis"]
+    },
+    {
+      "id": 20,
+      "type": "OllamaDataReaderNode",
+      "pos": [3300, 600],
+      "size": [300, 150],
+      "flags": {},
+      "order": 19,
+      "mode": 0,
+      "inputs": [
+        {"name": "input_text", "type": "STRING", "link": [18]}
+      ],
+      "outputs": [
+        {"name": "STRING", "type": "STRING", "links": null, "slot_index": 0}
+      ],
+      "properties": {},
+      "widgets_values": ["Summarize LoRA strengths and weaknesses for training data generation"]
+    }
+  ],
+  "links": [
+    [1, 1, 0, 12, 4, "INT"],
+    [2, 17, 0, 1, 2, "BOOLEAN"],
+    [3, 2, 0, 3, 0, "MODEL"],
+    [4, 2, 1, 3, 1, "CLIP"],
+    [5, 2, 2, 8, 1, "VAE"],
+    [6, 3, 0, 6, 0, "MODEL"],
+    [7, 3, 1, 14, 0, "CLIP"],
+    [8, 19, 0, 4, 1, "STRING"],
+    [9, 4, 0, 15, 0, "STRING"],
+    [10, 5, 0, 6, 0, "STRING"],
+    [11, 15, 0, 6, 1, "CONDITIONING"],
+    [12, 14, 0, 6, 2, "CONDITIONING"],
+    [13, 7, 0, 6, 3, "LATENT"],
+    [14, 6, 0, 8, 0, "LATENT"],
+    [15, 8, 0, 9, 0, "IMAGE"],
+    [16, 8, 0, 10, 0, "IMAGE"],
+    [17, 9, 0, 11, 1, "STRING"],
+    [18, 10, 0, 11, 2, "STRING"],
+    [19, 11, 0, 12, 0, "FLOAT"],
+    [20, 12, 0, 16, 0, "*"],
+    [21, 12, 1, 17, 0, "*"]
+  ],
+  "groups": [],
+  "config": {},
+  "extra": {},
+  "version": 0.4
+}</content>
+<parameter name="filePath">c:\Users\Baxter\Desktop\adaptive image improvement\examples\lora_improvement_workflow.json

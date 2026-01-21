@@ -1,18 +1,179 @@
 {
-  "workflow": {
-    "nodes": [
-      {
-        "id": 1,
-        "type": "NexaPopupLoaderNode",
-        "pos": [0, 0],
-        "properties": {}
-      }
-    ],
-    "links": [],
-    "groups": [],
-    "config": {},
-    "extra": {},
-    "version": 0.4
-  },
-  "description": "Sample workflow for loading Nexa models and chatting with semantic/style models in Adaptive Image Improvement."
+  "last_node_id": 6,
+  "last_link_id": 4,
+  "nodes": [
+    {
+      "id": 1,
+      "type": "NexaPopupLoaderNode",
+      "pos": [0, 0],
+      "size": [200, 80],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "trigger",
+          "type": "STRING",
+          "link": null
+        }
+      ],
+      "outputs": [],
+      "properties": {},
+      "widgets_values": ["run"]
+    },
+    {
+      "id": 2,
+      "type": "AudioTagExtractorNodeA",
+      "pos": [300, 0],
+      "size": [200, 80],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "audio_path",
+          "type": "STRING",
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "name": "semantic_tags",
+          "type": "STRING",
+          "links": [1]
+        },
+        {
+          "name": "extra1",
+          "type": "STRING",
+          "links": []
+        },
+        {
+          "name": "extra2",
+          "type": "STRING",
+          "links": []
+        }
+      ],
+      "properties": {},
+      "widgets_values": [""]
+    },
+    {
+      "id": 3,
+      "type": "AudioTagExtractorNodeB",
+      "pos": [600, 0],
+      "size": [200, 80],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "audio_path",
+          "type": "STRING",
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "name": "style_tags",
+          "type": "STRING",
+          "links": [2]
+        },
+        {
+          "name": "extra1",
+          "type": "STRING",
+          "links": []
+        },
+        {
+          "name": "extra2",
+          "type": "STRING",
+          "links": []
+        }
+      ],
+      "properties": {},
+      "widgets_values": [""]
+    },
+    {
+      "id": 4,
+      "type": "AudioImprovementArbiterNode",
+      "pos": [900, 0],
+      "size": [200, 80],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "semantic_tags",
+          "type": "STRING",
+          "link": 1
+        },
+        {
+          "name": "style_tags",
+          "type": "STRING",
+          "link": 2
+        }
+      ],
+      "outputs": [
+        {
+          "name": "improved_tags",
+          "type": "STRING",
+          "links": [3]
+        }
+      ],
+      "properties": {},
+      "widgets_values": ["", ""]
+    },
+    {
+      "id": 5,
+      "type": "AudioPromptMutatorNode",
+      "pos": [1200, 0],
+      "size": [200, 80],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "tags",
+          "type": "STRING",
+          "link": 3
+        }
+      ],
+      "outputs": [
+        {
+          "name": "mutated_prompt",
+          "type": "STRING",
+          "links": [4]
+        }
+      ],
+      "properties": {},
+      "widgets_values": [""]
+    },
+    {
+      "id": 6,
+      "type": "AudioLoggerNode",
+      "pos": [1500, 0],
+      "size": [200, 80],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "log_data",
+          "type": "STRING",
+          "link": 4
+        }
+      ],
+      "outputs": [],
+      "properties": {},
+      "widgets_values": [""]
+    }
+  ],
+  "links": [
+    [1, 2, 0, 4, 0, "STRING"],
+    [2, 3, 0, 4, 1, "STRING"],
+    [3, 4, 0, 5, 0, "STRING"],
+    [4, 5, 0, 6, 0, "STRING"]
+  ],
+  "groups": [],
+  "config": {},
+  "extra": {},
+  "version": 0.4
 }
