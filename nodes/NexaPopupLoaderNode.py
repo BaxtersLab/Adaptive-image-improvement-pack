@@ -17,6 +17,7 @@ _global_semantic_tags = ""
 _global_style_tags = ""
 _global_models = {"A": None, "B": None}  # Separate models for each chat
 _global_gui_lock = threading.Lock()
+_captured_responses = {}  # Keyed by chat_id; populated by capture_response()
 
 # ---- Dynamic HTML GUI content ----
 def get_html_page(semantic_tags, style_tags):
@@ -693,16 +694,19 @@ def get_html_page(semantic_tags, style_tags):
 # ---- HTTP handler ----
 class LocalGUIRequestHandler(http.server.BaseHTTPRequestHandler):
     def do_GET(self):
-        with _global_gui_lock:
-            semantic_tags = _global_semantic_tags
-            style_tags = _global_style_tags
-        html = get_html_page(semantic_tags, style_tags)
-        html_bytes = html.encode('utf-8')
-        self.send_response(200)
-        self.send_header("Content-Type", "text/html; charset=utf-8")
-        self.send_header("Content-Length", str(len(html_bytes)))
-        self.end_headers()
-        self.wfile.write(html_bytes)
+        if self.path == '/tags':
+            self.handle_tags()
+        else:
+            with _global_gui_lock:
+                semantic_tags = _global_semantic_tags
+                style_tags = _global_style_tags
+            html = get_html_page(semantic_tags, style_tags)
+            html_bytes = html.encode('utf-8')
+            self.send_response(200)
+            self.send_header("Content-Type", "text/html; charset=utf-8")
+            self.send_header("Content-Length", str(len(html_bytes)))
+            self.end_headers()
+            self.wfile.write(html_bytes)
 
     def do_POST(self):
         if self.path == '/load':
@@ -713,12 +717,6 @@ class LocalGUIRequestHandler(http.server.BaseHTTPRequestHandler):
             self.handle_capture()
         else:
             self.send_error(404)
-
-    def do_GET(self):
-        if self.path == '/tags':
-            self.handle_tags()
-        else:
-            super().do_GET()
 
     def handle_tags(self):
         """Return current tags as JSON"""
@@ -838,73 +836,6 @@ class LocalGUIRequestHandler(http.server.BaseHTTPRequestHandler):
             self.send_error(500, f"Internal server error: {str(e)}")
 
     def handle_chat(self):
-        content_length = int(self.headers['Content-Length'])
-        post_data = self.rfile.read(content_length)
-        try:
-            import json
-            data = json.loads(post_data.decode('utf-8'))
-            message = data['message']
-            chat_id = data.get('chat_id', 'A')  # Default to A if not specified
-        except (json.JSONDecodeError, KeyError, UnicodeDecodeError):
-            self.send_error(400, "Invalid JSON data")
-            return
-
-        with _global_gui_lock:
-            semantic = _global_semantic_tags
-            style = _global_style_tags
-            model = _global_models.get(chat_id)
-
-        if not model:
-            response = f"Error: No model loaded for Chat {chat_id}. Please load a model first."
-            self.send_response(200)
-            self.end_headers()
-            self.wfile.write(response.encode('utf-8'))
-            return
-
-        # Build enhanced prompt with tags
-        tags_context = ""
-        if semantic.strip():
-            tags_context += f"Semantic context from audio: {semantic}. "
-        if style.strip():
-            tags_context += f"Style context from audio: {style}. "
-
-        full_prompt = f"{tags_context}User query: {message}"
-
-        try:
-            # Use a longer timeout and better error handling
-            result = subprocess.run(
-                ['nexa', 'run', model, '-p', full_prompt],
-                capture_output=True,
-                text=True,
-                timeout=60,  # Increased timeout
-                encoding='utf-8',
-                errors='replace'
-            )
-
-            if result.returncode == 0:
-                response = result.stdout.strip()
-                if not response:
-                    response = "The model generated an empty response. This might indicate an issue with the model or prompt."
-            else:
-                response = f"Model execution failed: {result.stderr.strip() or 'Unknown error'}"
-
-        except subprocess.TimeoutExpired:
-            response = "Response timeout: The model took too long to respond. Try a shorter message or different model."
-        except FileNotFoundError:
-            response = "Error: Nexa CLI not found. Please ensure Nexa is installed and in your PATH."
-        except Exception as e:
-            response = f"Unexpected error: {str(e)}"
-
-        # Ensure response is not empty
-        if not response.strip():
-            response = "I apologize, but I couldn't generate a meaningful response. Please try rephrasing your question."
-
-        self.send_response(200)
-        self.send_header("Content-Type", "text/plain; charset=utf-8")
-        self.end_headers()
-        self.wfile.write(response.encode('utf-8'))
-
-    def handle_chat(self):
         try:
             content_length = int(self.headers['Content-Length'])
             post_data = self.rfile.read(content_length)
@@ -1006,13 +937,7 @@ class LocalGUIRequestHandler(http.server.BaseHTTPRequestHandler):
 
     def capture_response(self, chat_id, message, response, semantic_tags, style_tags):
         """Capture response for comparison pipeline"""
-        import json
-        import time
-
-        # Global storage for responses (in production, use a database)
         global _captured_responses
-        if '_captured_responses' not in globals():
-            _captured_responses = {}
 
         # Store response data
         response_data = {
@@ -1095,12 +1020,17 @@ class LocalGUIServer:
         except:
             return False
 
+    def url(self):
+        if self._running and self.port:
+            return f"http://{self.host}:{self.port}"
+        return None
+
     def restart(self):
-        """Restart the server"""
-        with self._lock:
-            self.stop()
-            time.sleep(0.5)  # Brief pause
-            self.start()
+        # No lock here — stop() and start() each acquire self._lock.
+        # Holding the lock here and then calling them would deadlock.
+        self.stop()
+        time.sleep(0.5)
+        self.start()
 
 # ---- Global server ----
 _global_gui_server = None

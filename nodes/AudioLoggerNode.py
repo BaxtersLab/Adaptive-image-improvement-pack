@@ -4,6 +4,7 @@ class AudioLoggerNode:
         return {"required": {"log_data": ("STRING", {})}}
 
     RETURN_TYPES = ()
+    OUTPUT_NODE = True
     FUNCTION = "log"
     CATEGORY = "audio"
 

@@ -6,23 +6,23 @@ from .nodes.AudioPromptMutatorNode import AudioPromptMutatorNode
 from .nodes.AudioLoggerNode import AudioLoggerNode
 
 NODE_CLASS_MAPPINGS = {
-    "NexaTagAwarePopupLoaderNode": NexaTagAwarePopupLoaderNode,
-    "NexaComparisonReaderNode": NexaComparisonReaderNode,
-    "AudioTagExtractorNodeA": AudioTagExtractorNodeA,
-    "AudioTagExtractorNodeB": AudioTagExtractorNodeB,
-    "AudioImprovementArbiterNode": AudioImprovementArbiterNode,
-    "AudioPromptMutatorNode": AudioPromptMutatorNode,
-    "AudioLoggerNode": AudioLoggerNode,
+    "AIP_NexaTagAwarePopupLoader": NexaTagAwarePopupLoaderNode,
+    "AIP_NexaComparisonReader": NexaComparisonReaderNode,
+    "AIP_AudioTagExtractorA": AudioTagExtractorNodeA,
+    "AIP_AudioTagExtractorB": AudioTagExtractorNodeB,
+    "AIP_AudioImprovementArbiter": AudioImprovementArbiterNode,
+    "AIP_AudioPromptMutator": AudioPromptMutatorNode,
+    "AIP_AudioLogger": AudioLoggerNode,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "NexaTagAwarePopupLoaderNode": "Nexa Tag-Aware Chat GUI",
-    "NexaComparisonReaderNode": "Nexa Response Comparison Reader",
-    "AudioTagExtractorNodeA": "Audio Tag Extractor A",
-    "AudioTagExtractorNodeB": "Audio Tag Extractor B",
-    "AudioImprovementArbiterNode": "Audio Improvement Arbiter",
-    "AudioPromptMutatorNode": "Audio Prompt Mutator",
-    "AudioLoggerNode": "Audio Logger",
+    "AIP_NexaTagAwarePopupLoader": "Nexa Tag-Aware Chat GUI",
+    "AIP_NexaComparisonReader": "Nexa Response Comparison Reader",
+    "AIP_AudioTagExtractorA": "Audio Tag Extractor A",
+    "AIP_AudioTagExtractorB": "Audio Tag Extractor B",
+    "AIP_AudioImprovementArbiter": "Audio Improvement Arbiter",
+    "AIP_AudioPromptMutator": "Audio Prompt Mutator",
+    "AIP_AudioLogger": "Audio Logger",
 }
 
 __all__ = ['NODE_CLASS_MAPPINGS', 'NODE_DISPLAY_NAME_MAPPINGS']
